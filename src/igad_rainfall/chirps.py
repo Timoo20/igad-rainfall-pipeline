@@ -53,7 +53,11 @@ def fetch_day(day: dt.date, settings: Settings, bbox: tuple[float, float, float,
     if out.exists():
         return out
     out.parent.mkdir(parents=True, exist_ok=True)
-    with rasterio.Env(**GDAL_ENV), rasterio.open(f"/vsicurl/{daily_url(day)}") as src:
+    url = daily_url(day)
+    if requests.head(url, timeout=30).status_code == 404:
+        # CHIRPS has occasional gaps (e.g. Apr-May 2026); say so plainly rather than a bare GDAL 404.
+        raise FileNotFoundError(f"CHIRPS has not published {day} ({url})")
+    with rasterio.Env(**GDAL_ENV), rasterio.open(f"/vsicurl/{url}") as src:
         window = from_bounds(*bbox, transform=src.transform).round_offsets().round_lengths()
         data = src.read(1, window=window).astype("float32")
         profile = src.profile | {

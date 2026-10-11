@@ -116,6 +116,8 @@ gcloud storage rsync -r ../../data/cog gs://$(terraform output -raw bucket)/cog
 
 - CHIRPS *final* data lags real time by several weeks. An operational system would use CHIRPS preliminary data
   or IMERG Early for monitoring, and a forecast (for example GEFS or ECMWF) for warnings.
+- CHIRPS has occasional gaps in its archive (for example, April and May 2026 were missing in October 2026).
+  A run whose window covers a missing day fails with a clear error instead of reporting an incomplete total.
 - The thresholds are fixed values in mm. Return-period or percentile thresholds derived from a 1991–2020
   climatology are a better basis for impact-based warnings, and are the next feature.
 - Rainfall is only a proxy for flooding. Coupling with GloFAS discharge or a hydrological model is the natural
