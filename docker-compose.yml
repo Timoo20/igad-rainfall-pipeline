@@ -1,0 +1,26 @@
+# Local stack: PostGIS + one pipeline run. The ea-flood-watch map reads the same database.
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: hazards
+      POSTGRES_USER: hazards
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hazards}
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hazards -d hazards"]
+      interval: 5s
+      retries: 10
+
+  pipeline:
+    build: .
+    command: ["--no-validate"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://hazards:${POSTGRES_PASSWORD:-hazards}@postgis:5432/hazards
+    volumes: [./data:/data]
+    depends_on:
+      postgis: { condition: service_healthy }
+
+volumes:
+  pgdata:

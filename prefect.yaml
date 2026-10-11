@@ -1,0 +1,16 @@
+# Prefect deployment: runs the daily cycle at 06:00 East Africa Time.
+# Usage: prefect work-pool create gha-pool --type process && prefect deploy --all && prefect worker start -p gha-pool
+name: igad-rainfall-pipeline
+prefect-version: 3.0.0
+
+deployments:
+  - name: gha-daily-rainfall
+    entrypoint: src/igad_rainfall/flows.py:daily_rainfall
+    work_pool:
+      name: gha-pool
+    schedules:
+      - cron: "0 6 * * *"
+        timezone: Africa/Nairobi
+    parameters:
+      validate_stac: true
+    tags: [chirps, rainfall, early-warning]
